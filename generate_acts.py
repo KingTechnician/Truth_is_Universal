@@ -15,7 +15,13 @@ class Hook:
         self.out = None
 
     def __call__(self, module, module_inputs, module_outputs):
-        self.out, _ = module_outputs
+        # Qwen2.5 and some others return just a tensor; others may return a tuple.
+        if isinstance(module_outputs, tuple):
+            # Take the first element (hidden states)
+            self.out = module_outputs[0]
+        else:
+            # Direct tensor output
+            self.out = module_outputs
 
 def load_model(model_family: str, model_size: str, model_type: str, device: str):
     model_path = os.path.join(config[model_family]['weights_directory'], 
