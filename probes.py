@@ -55,6 +55,15 @@ class TTPD():
         acts_2d = self._project_acts(acts)
         return t.tensor(self.LR.predict(acts_2d))
     
+    def predict_proba(self, acts):
+        """Returns the continuous probability for the positive class (True)."""
+        acts = acts.numpy()
+        U = np.zeros((acts.shape[0], 2))
+        U[:, 0] = acts @ self.t_g
+        U[:, 1] = acts @ self.polarity_direc
+        # predict_proba returns shape (n_samples, 2), where [:, 1] is the probability of class 1 (True)
+        return self.lr_classifier.predict_proba(U)[:, 1]
+    
     def _project_acts(self, acts):
         proj_t_g = acts.numpy() @ self.t_g
         proj_p = acts.numpy() @ self.polarity_direc.T
@@ -125,6 +134,12 @@ class LRProbe():
 
     def pred(self, acts):
         return t.tensor(self.LR.predict(acts))
+    
+
+    def predict_proba(self, acts):
+        """Returns the continuous probability for the positive class (True)."""
+        # predict_proba returns shape (n_samples, 2), where [:, 1] is the probability of class 1 (True)
+        return self.classifier.predict_proba(acts.numpy())[:, 1]
     
 
 class MMProbe(t.nn.Module):
